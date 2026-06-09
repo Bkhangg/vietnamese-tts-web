@@ -444,10 +444,13 @@
         <div class="status" id="status"></div>
         <audio id="audioPlayer" controls></audio>
 
-        <button class="history-toggle" id="historyToggle">
-            <span>📋 Lịch sử</span>
-            <span class="badge" id="historyBadge">0</span>
-        </button>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+            <button class="history-toggle" id="historyToggle" style="flex:1;">
+                <span>📋 Lịch sử</span>
+                <span class="badge" id="historyBadge">0</span>
+            </button>
+            <button class="btn btn-secondary" id="clearHistoryBtn" style="flex:0; padding:10px 14px; font-size:12px;">✕ Xóa LS</button>
+        </div>
         <div class="history-list" id="historyList"></div>
 
         <div class="kbd-hint">⌨ Enter: Phát &nbsp;·&nbsp; Ctrl+A: Chọn tất cả &nbsp;·&nbsp; Ctrl+↑↓: Tốc độ</div>
@@ -511,8 +514,19 @@
             return d.innerHTML;
         }
 
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
         historyToggle.addEventListener('click', () => {
             historyList.classList.toggle('open');
+        });
+
+        clearHistoryBtn.addEventListener('click', () => {
+            if (history.length === 0) return;
+            if (confirm('Xóa toàn bộ lịch sử?')) {
+                history = [];
+                localStorage.removeItem('tts_history');
+                renderHistory();
+            }
         });
 
         renderHistory();
