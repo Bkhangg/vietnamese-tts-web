@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.mp3
+test_*.mp3
+test_*.txt
+venv/
+.env
+*.egg-info/
+dist/

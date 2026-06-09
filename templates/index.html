@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech - Tiếng Việt</title>
+    <style>
+        :root {
+            --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --surface: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.1);
+            --text: #fff;
+            --text-muted: rgba(255,255,255,0.4);
+            --input-bg: rgba(255,255,255,0.06);
+            --select-bg: rgba(255,255,255,0.08);
+            --range-bg: rgba(255,255,255,0.12);
+            --btn-sec-bg: rgba(255,255,255,0.06);
+            --btn-sec-text: rgba(255,255,255,0.7);
+            --btn-sec-border: rgba(255,255,255,0.08);
+            --history-item: rgba(255,255,255,0.04);
+            --scrollbar: rgba(255,255,255,0.1);
+            --shadow: 0 25px 60px rgba(0,0,0,0.5);
+        }
+        .light {
+            --bg: linear-gradient(135deg, #e8e0f0, #d4c4e8, #c8b8e0);
+            --surface: rgba(255,255,255,0.7);
+            --border: rgba(100,80,160,0.15);
+            --text: #2a1a4a;
+            --text-muted: rgba(42,26,74,0.4);
+            --input-bg: rgba(255,255,255,0.5);
+            --select-bg: rgba(255,255,255,0.5);
+            --range-bg: rgba(100,80,160,0.2);
+            --btn-sec-bg: rgba(255,255,255,0.4);
+            --btn-sec-text: rgba(42,26,74,0.7);
+            --btn-sec-border: rgba(100,80,160,0.15);
+            --history-item: rgba(100,80,160,0.06);
+            --scrollbar: rgba(100,80,160,0.15);
+            --shadow: 0 25px 60px rgba(100,80,160,0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 20px;
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
+        }
+        .container {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 36px 40px;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: var(--shadow);
+            transition: background 0.3s, border 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 20px; right: 24px;
+            background: var(--btn-sec-bg);
+            border: 1px solid var(--btn-sec-border);
+            color: var(--btn-sec-text);
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .theme-toggle:hover { background: var(--btn-sec-bg); filter: brightness(1.2); }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        .file-upload {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .file-upload label {
+            padding: 8px 16px;
+            border-radius: 10px;
+            background: var(--btn-sec-bg);
+            border: 1px solid var(--btn-sec-border);
+            color: var(--btn-sec-text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .file-upload label:hover { filter: brightness(1.15); }
+        .file-upload input { display: none; }
+        .file-name { font-size: 13px; color: var(--text-muted); align-self: center; }
+        textarea {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 140px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.2s;
+        }
+        textarea:focus { border-color: #7c5cfc; }
+        textarea::placeholder { color: var(--text-muted); }
+        .char-count {
+            text-align: right;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .control-group { min-width: 0; }
+        .control-group label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--select-bg);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: background 0.3s, color 0.3s, border 0.3s;
+        }
+        .control-group select option { background: var(--surface); color: var(--text); }
+        .range-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: var(--range-bg);
+            outline: none;
+            flex: 1;
+            transition: background 0.3s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #7c5cfc;
+            cursor: pointer;
+            border: 2px solid #fff;
+            transition: 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #7c5cfc;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        .range-value {
+            font-size: 13px;
+            min-width: 40px;
+            text-align: right;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .actions .btn { flex: 1; min-width: 80px; }
+        .btn {
+            padding: 13px 20px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c5cfc, #6a4de6);
+            color: #fff;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,92,252,0.3); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-secondary {
+            background: var(--btn-sec-bg);
+            color: var(--btn-sec-text);
+            border: 1px solid var(--btn-sec-border);
+        }
+        .btn-secondary:hover { filter: brightness(1.15); }
+        .btn-download {
+            background: var(--btn-sec-bg);
+            color: var(--btn-sec-text);
+            border: 1px solid var(--btn-sec-border);
+        }
+        .btn-download:hover { filter: brightness(1.15); }
+        .btn-download:disabled { opacity: 0.3; cursor: not-allowed; }
+        .status {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+        .status.loading {
+            display: block;
+            background: rgba(124,92,252,0.12);
+            color: #b8a8ff;
+            border: 1px solid rgba(124,92,252,0.25);
+        }
+        .status.error {
+            display: block;
+            background: rgba(255,82,82,0.12);
+            color: #ff8a8a;
+            border: 1px solid rgba(255,82,82,0.25);
+        }
+        audio {
+            width: 100%;
+            margin-top: 16px;
+            border-radius: 12px;
+            display: none;
+        }
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+        .btn.loading .spinner { display: inline-block; }
+        .btn.loading .btn-text { display: none; }
+        .presets {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover {
+            background: rgba(124,92,252,0.15);
+            border-color: rgba(124,92,252,0.3);
+            color: #b8a8ff;
+        }
+        .history-toggle {
+            margin-top: 16px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--btn-sec-bg);
+            color: var(--btn-sec-text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .history-toggle:hover { filter: brightness(1.1); }
+        .history-toggle .badge {
+            background: #7c5cfc;
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .history-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .history-list.open { max-height: 300px; overflow-y: auto; }
+        .history-list::-webkit-scrollbar { width: 4px; }
+        .history-list::-webkit-scrollbar-track { background: transparent; }
+        .history-list::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-top: 6px;
+            border-radius: 10px;
+            background: var(--history-item);
+            border: 1px solid var(--border);
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .history-item:hover { border-color: #7c5cfc; }
+        .history-item .text-preview {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text);
+        }
+        .history-item .time {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .history-item .play-icon { color: #7c5cfc; font-size: 16px; }
+        .kbd-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 12px;
+            opacity: 0.6;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 550px) {
+            .container { padding: 24px 20px; }
+            .controls { grid-template-columns: 1fr; }
+            .actions .btn { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <button class="theme-toggle" id="themeToggle" title="Chuyển theme">🌙</button>
+
+        <h1>Text to Speech</h1>
+        <p class="subtitle">Chuyển văn bản thành giọng nói tiếng Việt</p>
+
+        <div class="file-upload">
+            <label for="fileInput">📂 Mở file .txt</label>
+            <input type="file" id="fileInput" accept=".txt">
+            <span class="file-name" id="fileName"></span>
+        </div>
+
+        <textarea id="textInput" placeholder="Nhập văn bản cần đọc... (Enter để phát, Shift+Enter để xuống dòng)"></textarea>
+        <div class="char-count"><span id="charCount">0</span> ký tự</div>
+
+        <div class="presets">
+            <button class="preset-btn" data-text="Xin chào, tôi là trợ lý giọng nói tiếng Việt. Rất vui được gặp bạn!">Chào hỏi</button>
+            <button class="preset-btn" data-text="Hôm nay là một ngày thật đẹp trời. Ánh nắng ban mai thật rực rỡ.">Thời tiết</button>
+            <button class="preset-btn" data-text="Việt Nam là một đất nước xinh đẹp với bề dày lịch sử và văn hóa lâu đời.">Giới thiệu</button>
+            <button class="preset-btn" data-text="Công nghệ trí tuệ nhân tạo đang thay đổi thế giới từng ngày.">Công nghệ</button>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Giọng đọc</label>
+                <select id="voiceSelect">
+                    <option value="female">Hoài My (Nữ)</option>
+                    <option value="male">Nam Minh (Nam)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Tốc độ</label>
+                <div class="range-wrapper">
+                    <input type="range" id="rateSlider" min="-50" max="50" value="0">
+                    <span class="range-value" id="rateValue">0%</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Cao độ</label>
+                <div class="range-wrapper">
+                    <input type="range" id="pitchSlider" min="-50" max="50" value="0">
+                    <span class="range-value" id="pitchValue">0Hz</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Âm lượng</label>
+                <div class="range-wrapper">
+                    <input type="range" id="volumeSlider" min="-50" max="50" value="0">
+                    <span class="range-value" id="volumeValue">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="speakBtn">
+                <span class="btn-text">▶ Phát</span>
+                <span class="spinner"></span>
+            </button>
+            <button class="btn btn-secondary" id="clearBtn">✕ Xóa</button>
+            <a class="btn btn-download" id="downloadBtn" download="tts.mp3" style="display:none">⬇ Tải</a>
+        </div>
+
+        <div class="status" id="status"></div>
+        <audio id="audioPlayer" controls></audio>
+
+        <button class="history-toggle" id="historyToggle">
+            <span>📋 Lịch sử</span>
+            <span class="badge" id="historyBadge">0</span>
+        </button>
+        <div class="history-list" id="historyList"></div>
+
+        <div class="kbd-hint">⌨ Enter: Phát &nbsp;·&nbsp; Ctrl+A: Chọn tất cả &nbsp;·&nbsp; Ctrl+↑↓: Tốc độ</div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const rateSlider = document.getElementById('rateSlider');
+        const pitchSlider = document.getElementById('pitchSlider');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const rateValue = document.getElementById('rateValue');
+        const pitchValue = document.getElementById('pitchValue');
+        const volumeValue = document.getElementById('volumeValue');
+        const speakBtn = document.getElementById('speakBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const status = document.getElementById('status');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const charCount = document.getElementById('charCount');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const themeToggle = document.getElementById('themeToggle');
+        const historyToggle = document.getElementById('historyToggle');
+        const historyList = document.getElementById('historyList');
+        const historyBadge = document.getElementById('historyBadge');
+
+        let lastBlobUrl = null;
+        let history = JSON.parse(localStorage.getItem('tts_history') || '[]');
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            historyBadge.textContent = history.length;
+            history.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <span class="play-icon">▶</span>
+                    <span class="text-preview">${escapeHtml(item.text)}</span>
+                    <span class="time">${item.time}</span>
+                `;
+                div.addEventListener('click', () => {
+                    textInput.value = item.text;
+                    charCount.textContent = item.text.length;
+                    speak();
+                });
+                historyList.appendChild(div);
+            });
+        }
+
+        function addHistory(text) {
+            history.unshift({ text, time: new Date().toLocaleTimeString('vi-VN') });
+            if (history.length > 20) history.pop();
+            localStorage.setItem('tts_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s.slice(0, 60) + (s.length > 60 ? '...' : '');
+            return d.innerHTML;
+        }
+
+        historyToggle.addEventListener('click', () => {
+            historyList.classList.toggle('open');
+        });
+
+        renderHistory();
+
+        textInput.addEventListener('input', () => {
+            charCount.textContent = textInput.value.length;
+        });
+
+        textInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                speak();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'a' && e.target === textInput) {
+                return;
+            }
+            if (e.ctrlKey && e.key === 'ArrowUp') {
+                e.preventDefault();
+                rateSlider.value = Math.max(-50, parseInt(rateSlider.value) - 5);
+                rateValue.textContent = `${rateSlider.value > 0 ? '+' : ''}${rateSlider.value}%`;
+            }
+            if (e.ctrlKey && e.key === 'ArrowDown') {
+                e.preventDefault();
+                rateSlider.value = Math.min(50, parseInt(rateSlider.value) + 5);
+                rateValue.textContent = `${rateSlider.value > 0 ? '+' : ''}${rateSlider.value}%`;
+            }
+        });
+
+        rateSlider.addEventListener('input', () => {
+            rateValue.textContent = `${rateSlider.value > 0 ? '+' : ''}${rateSlider.value}%`;
+        });
+        pitchSlider.addEventListener('input', () => {
+            pitchValue.textContent = `${pitchSlider.value > 0 ? '+' : ''}${pitchSlider.value}Hz`;
+        });
+        volumeSlider.addEventListener('input', () => {
+            volumeValue.textContent = `${volumeSlider.value > 0 ? '+' : ''}${volumeSlider.value}%`;
+        });
+
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                textInput.value = btn.dataset.text;
+                charCount.textContent = textInput.value.length;
+            });
+        });
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            fileName.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                textInput.value = e.target.result;
+                charCount.textContent = textInput.value.length;
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light');
+            themeToggle.textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
+            localStorage.setItem('tts_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+        });
+        if (localStorage.getItem('tts_theme') === 'light') {
+            document.body.classList.add('light');
+            themeToggle.textContent = '☀️';
+        }
+
+        speakBtn.addEventListener('click', speak);
+
+        async function speak() {
+            const text = textInput.value.trim();
+            if (!text) {
+                showStatus('Vui lòng nhập văn bản', 'error');
+                return;
+            }
+
+            speakBtn.classList.add('loading');
+            speakBtn.disabled = true;
+            showStatus('Đang tạo giọng nói...', 'loading');
+            audioPlayer.style.display = 'none';
+
+            try {
+                const res = await fetch('/speak', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text,
+                        voice: voiceSelect.value,
+                        rate: rateSlider.value,
+                        pitch: pitchSlider.value,
+                        volume: volumeSlider.value,
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Lỗi không xác định');
+                }
+
+                const blob = await res.blob();
+                if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+                const url = URL.createObjectURL(blob);
+                lastBlobUrl = url;
+                audioPlayer.src = url;
+                audioPlayer.style.display = 'block';
+                downloadBtn.href = url;
+                downloadBtn.download = `tts_${Date.now()}.mp3`;
+                downloadBtn.style.display = '';
+                status.style.display = 'none';
+
+                addHistory(text);
+                audioPlayer.play();
+            } catch (err) {
+                showStatus(err.message, 'error');
+            } finally {
+                speakBtn.classList.remove('loading');
+                speakBtn.disabled = false;
+            }
+        }
+
+        clearBtn.addEventListener('click', () => {
+            textInput.value = '';
+            charCount.textContent = '0';
+            audioPlayer.style.display = 'none';
+            audioPlayer.src = '';
+            downloadBtn.style.display = 'none';
+            fileName.textContent = '';
+            fileInput.value = '';
+            if (lastBlobUrl) { URL.revokeObjectURL(lastBlobUrl); lastBlobUrl = null; }
+            status.style.display = 'none';
+        });
+
+        function showStatus(msg, type) {
+            status.textContent = msg;
+            status.className = 'status ' + type;
+        }
+    </script>
+</body>
+</html>
