@@ -39,11 +39,22 @@
 ### Các bước
 
 ```bash
-git clone https://github.com/Bkhangg/vietnamese-tts-web.git
+## Hướng dẫn cài đặt (Installation)
+
+Chạy các lệnh sau theo thứ tự để thiết lập môi trường:
+
+```bash
+# Clone dự án về máy
+git clone [https://github.com/Bkhangg/vietnamese-tts-web.git](https://github.com/Bkhangg/vietnamese-tts-web.git)
 cd vietnamese-tts-web
 
+# Cài đặt các thư viện cần thiết
 pip install edge-tts flask gtts pydub
 
+# LƯU Ý: Nếu bạn dùng Python 3.13 trở lên, cần cài thêm gói này để tránh lỗi "No module named 'pyaudioop'"
+pip install audioop-lts
+
+# Khởi chạy ứng dụng
 python app.py
 ```
 
