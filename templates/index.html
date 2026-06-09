@@ -412,6 +412,13 @@
                 </select>
             </div>
             <div class="control-group">
+                <label>Kiểu đọc</label>
+                <select id="livelySelect">
+                    <option value="false">Bình thường</option>
+                    <option value="true">Sinh động</option>
+                </select>
+            </div>
+            <div class="control-group">
                 <label>Giọng đọc</label>
                 <select id="voiceSelect">
                     <option value="female">Hoài My (Nữ)</option>
@@ -530,6 +537,7 @@
         });
 
         const engineSelect = document.getElementById('engineSelect');
+        const livelySelect = document.getElementById('livelySelect');
 
         engineSelect.addEventListener('change', () => {
             const isMs = engineSelect.value === 'microsoft';
@@ -641,6 +649,7 @@
                         rate: rateSlider.value,
                         pitch: pitchSlider.value,
                         volume: volumeSlider.value,
+                        lively: livelySelect.value === 'true',
                     })
                 });
 
