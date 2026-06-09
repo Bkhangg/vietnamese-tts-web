@@ -2,7 +2,7 @@
 
 Ứng dụng Text-to-Speech tiếng Việt với giao diện web, hỗ trợ **Microsoft Neural** và **Google TTS**.
 
-![Hero](images/hero.png)
+<!-- Bạn có thể thêm ảnh chụp màn hình vào thư mục images/ và link ở đây -->
 
 ## Tính năng
 
