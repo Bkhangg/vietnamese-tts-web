@@ -1,5 +1,6 @@
 import asyncio
 import edge_tts
+import io
 from edge_tts.exceptions import NoAudioReceived
 from flask import Flask, request, send_file, render_template, jsonify
 import tempfile
@@ -44,17 +45,36 @@ def get_voices():
 def speak():
     data = request.json
     text = data.get("text", "").strip()
+    engine = data.get("engine", "microsoft")
     voice = data.get("voice", "female")
-    rate = fmt(data.get("rate", "0"))
-    pitch = fmt_pitch(data.get("pitch", "0"))
-    volume = fmt(data.get("volume", "0"))
 
     if not text:
         return jsonify({"error": "Vui lòng nhập văn bản"}), 400
 
-    voice_code = VOICES.get(voice, VOICES["female"])
     filename = f"tts_{uuid.uuid4().hex}.mp3"
     filepath = os.path.join(AUDIO_DIR, filename)
+
+    if engine == "google":
+        return _speak_google(text, filepath)
+    return _speak_microsoft(text, voice, data, filepath)
+
+
+def _speak_google(text, filepath):
+    try:
+        from gtts import gTTS
+        tts = gTTS(text, lang="vi")
+        tts.save(filepath)
+        return send_file(filepath, mimetype="audio/mpeg", as_attachment=False)
+    except Exception as e:
+        return jsonify({"error": f"Lỗi Google TTS: {str(e)}"}), 500
+
+
+def _speak_microsoft(text, voice, data, filepath):
+    rate = fmt(data.get("rate", "0"))
+    pitch = fmt_pitch(data.get("pitch", "0"))
+    volume = fmt(data.get("volume", "0"))
+
+    voice_code = VOICES.get(voice, VOICES["female"])
 
     async def _generate():
         for attempt in range(3):

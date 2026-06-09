@@ -28,7 +28,7 @@
             --text: #2a1a4a;
             --text-muted: rgba(42,26,74,0.4);
             --input-bg: rgba(255,255,255,0.5);
-            --select-bg: rgba(255,255,255,0.5);
+            --select-bg: rgba(255,255,255,0.7);
             --range-bg: rgba(100,80,160,0.2);
             --btn-sec-bg: rgba(255,255,255,0.4);
             --btn-sec-text: rgba(42,26,74,0.7);
@@ -165,7 +165,8 @@
             background-position: right 12px center;
             transition: background 0.3s, color 0.3s, border 0.3s;
         }
-        .control-group select option { background: var(--surface); color: var(--text); }
+        .control-group select option { background: #1a1a2e; color: #fff; }
+        .light .control-group select option { background: #f0ecf6; color: #2a1a4a; }
         .range-wrapper {
             display: flex;
             align-items: center;
@@ -404,27 +405,34 @@
 
         <div class="controls">
             <div class="control-group">
+                <label>Nguồn giọng</label>
+                <select id="engineSelect">
+                    <option value="microsoft">Microsoft Neural</option>
+                    <option value="google">Google TTS</option>
+                </select>
+            </div>
+            <div class="control-group">
                 <label>Giọng đọc</label>
                 <select id="voiceSelect">
                     <option value="female">Hoài My (Nữ)</option>
                     <option value="male">Nam Minh (Nam)</option>
                 </select>
             </div>
-            <div class="control-group">
+            <div class="control-group ms-control">
                 <label>Tốc độ</label>
                 <div class="range-wrapper">
                     <input type="range" id="rateSlider" min="-50" max="50" value="0">
                     <span class="range-value" id="rateValue">0%</span>
                 </div>
             </div>
-            <div class="control-group">
+            <div class="control-group ms-control">
                 <label>Cao độ</label>
                 <div class="range-wrapper">
                     <input type="range" id="pitchSlider" min="-50" max="50" value="0">
                     <span class="range-value" id="pitchValue">0Hz</span>
                 </div>
             </div>
-            <div class="control-group">
+            <div class="control-group ms-control">
                 <label>Âm lượng</label>
                 <div class="range-wrapper">
                     <input type="range" id="volumeSlider" min="-50" max="50" value="0">
@@ -519,6 +527,16 @@
 
         historyToggle.addEventListener('click', () => {
             historyList.classList.toggle('open');
+        });
+
+        const engineSelect = document.getElementById('engineSelect');
+
+        engineSelect.addEventListener('change', () => {
+            const isMs = engineSelect.value === 'microsoft';
+            document.querySelectorAll('.ms-control').forEach(el => {
+                el.style.opacity = isMs ? '1' : '0.3';
+            });
+            voiceSelect.disabled = !isMs;
         });
 
         clearHistoryBtn.addEventListener('click', () => {
@@ -618,6 +636,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text,
+                        engine: engineSelect.value,
                         voice: voiceSelect.value,
                         rate: rateSlider.value,
                         pitch: pitchSlider.value,
