@@ -371,10 +371,11 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 550px) {
+            @media (max-width: 550px) {
             .container { padding: 24px 20px; }
             .controls { grid-template-columns: 1fr; }
             .actions .btn { min-width: 100%; }
+            .history-toggle { font-size: 12px; }
         }
     </style>
 </head>
@@ -444,12 +445,12 @@
         <div class="status" id="status"></div>
         <audio id="audioPlayer" controls></audio>
 
-        <div style="display:flex; gap:8px; margin-top:16px;">
-            <button class="history-toggle" id="historyToggle" style="flex:1;">
+        <div style="display:flex; gap:8px; margin-top:16px; align-items:stretch;">
+            <button class="history-toggle" id="historyToggle" style="flex:1; margin-top:0;">
                 <span>📋 Lịch sử</span>
                 <span class="badge" id="historyBadge">0</span>
             </button>
-            <button class="btn btn-secondary" id="clearHistoryBtn" style="flex:0; padding:10px 14px; font-size:12px;">✕ Xóa LS</button>
+            <button class="btn btn-secondary" id="clearHistoryBtn" style="flex:none; padding:10px 14px; font-size:12px; white-space:nowrap;">✕ Xóa LS</button>
         </div>
         <div class="history-list" id="historyList"></div>
 
