@@ -1,0 +1,18 @@
+# Core
+flask>=3.0
+pydub>=0.25
+
+# Online TTS
+edge-tts>=7.0
+gTTS>=2.5
+
+# Offline TTS engines (install as needed)
+# Piper TTS (offline, nhẹ)
+piper-tts>=1.4
+
+# MeloTTS (mã nguồn mở) - cần PyTorch
+# pip install git+https://github.com/myshell-ai/MeloTTS.git
+# pip install unidic && python -m unidic download  # cho tiếng Nhật
+
+# XTTS v2 (clone giọng) - cần Python 3.10-3.11
+# pip install TTS

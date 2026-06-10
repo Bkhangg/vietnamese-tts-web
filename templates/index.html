@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text to Speech - Tiếng Việt</title>
+    <title>Text to Speech - Đa Engine</title>
     <style>
         :root {
             --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
@@ -20,6 +20,7 @@
             --history-item: rgba(255,255,255,0.04);
             --scrollbar: rgba(255,255,255,0.1);
             --shadow: 0 25px 60px rgba(0,0,0,0.5);
+            --accent: #7c5cfc;
         }
         .light {
             --bg: linear-gradient(135deg, #e8e0f0, #d4c4e8, #c8b8e0);
@@ -56,7 +57,7 @@
             border-radius: 24px;
             padding: 36px 40px;
             width: 100%;
-            max-width: 720px;
+            max-width: 800px;
             box-shadow: var(--shadow);
             transition: background 0.3s, border 0.3s, box-shadow 0.3s;
             position: relative;
@@ -76,7 +77,7 @@
             justify-content: center;
             transition: 0.2s;
         }
-        .theme-toggle:hover { background: var(--btn-sec-bg); filter: brightness(1.2); }
+        .theme-toggle:hover { filter: brightness(1.2); }
         h1 {
             font-size: 28px;
             font-weight: 700;
@@ -125,7 +126,7 @@
             outline: none;
             transition: border 0.2s;
         }
-        textarea:focus { border-color: #7c5cfc; }
+        textarea:focus { border-color: var(--accent); }
         textarea::placeholder { color: var(--text-muted); }
         .char-count {
             text-align: right;
@@ -149,7 +150,7 @@
             letter-spacing: 0.5px;
             margin-bottom: 6px;
         }
-        .control-group select {
+        .control-group select, .control-group input[type="text"] {
             width: 100%;
             padding: 10px 14px;
             border-radius: 12px;
@@ -165,8 +166,15 @@
             background-position: right 12px center;
             transition: background 0.3s, color 0.3s, border 0.3s;
         }
+        .control-group input[type="text"] { appearance: auto; }
         .control-group select option { background: #1a1a2e; color: #fff; }
         .light .control-group select option { background: #f0ecf6; color: #2a1a4a; }
+        .engine-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
         .range-wrapper {
             display: flex;
             align-items: center;
@@ -186,7 +194,7 @@
             -webkit-appearance: none;
             width: 18px; height: 18px;
             border-radius: 50%;
-            background: #7c5cfc;
+            background: var(--accent);
             cursor: pointer;
             border: 2px solid #fff;
             transition: 0.15s;
@@ -195,7 +203,7 @@
         input[type="range"]::-moz-range-thumb {
             width: 18px; height: 18px;
             border-radius: 50%;
-            background: #7c5cfc;
+            background: var(--accent);
             cursor: pointer;
             border: 2px solid #fff;
         }
@@ -228,7 +236,7 @@
             text-decoration: none;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #7c5cfc, #6a4de6);
+            background: linear-gradient(135deg, var(--accent), #6a4de6);
             color: #fff;
         }
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,92,252,0.3); }
@@ -321,7 +329,7 @@
         }
         .history-toggle:hover { filter: brightness(1.1); }
         .history-toggle .badge {
-            background: #7c5cfc;
+            background: var(--accent);
             color: #fff;
             font-size: 11px;
             padding: 2px 8px;
@@ -349,7 +357,7 @@
             cursor: pointer;
             transition: 0.15s;
         }
-        .history-item:hover { border-color: #7c5cfc; }
+        .history-item:hover { border-color: var(--accent); }
         .history-item .text-preview {
             flex: 1;
             overflow: hidden;
@@ -362,7 +370,7 @@
             color: var(--text-muted);
             white-space: nowrap;
         }
-        .history-item .play-icon { color: #7c5cfc; font-size: 16px; }
+        .history-item .play-icon { color: var(--accent); font-size: 16px; }
         .kbd-hint {
             font-size: 11px;
             color: var(--text-muted);
@@ -370,10 +378,14 @@
             margin-top: 12px;
             opacity: 0.6;
         }
+        .xtts-section, .piper-section, .melotts-section {
+            display: none;
+        }
+        .hidden-engine { display: none !important; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-            @media (max-width: 550px) {
-            .container { padding: 24px 20px; }
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; }
             .controls { grid-template-columns: 1fr; }
             .actions .btn { min-width: 100%; }
             .history-toggle { font-size: 12px; }
@@ -385,7 +397,7 @@
         <button class="theme-toggle" id="themeToggle" title="Chuyển theme">🌙</button>
 
         <h1>Text to Speech</h1>
-        <p class="subtitle">Chuyển văn bản thành giọng nói tiếng Việt</p>
+        <p class="subtitle">Chuyển văn bản thành giọng nói - Edge TTS, Google TTS, Piper TTS</p>
 
         <div class="file-upload">
             <label for="fileInput">📂 Mở file .txt</label>
@@ -397,49 +409,55 @@
         <div class="char-count"><span id="charCount">0</span> ký tự</div>
 
         <div class="presets">
-            <button class="preset-btn" data-text="Xin chào, tôi là trợ lý giọng nói tiếng Việt. Rất vui được gặp bạn!">Chào hỏi</button>
-            <button class="preset-btn" data-text="Hôm nay là một ngày thật đẹp trời. Ánh nắng ban mai thật rực rỡ.">Thời tiết</button>
-            <button class="preset-btn" data-text="Việt Nam là một đất nước xinh đẹp với bề dày lịch sử và văn hóa lâu đời.">Giới thiệu</button>
-            <button class="preset-btn" data-text="Công nghệ trí tuệ nhân tạo đang thay đổi thế giới từng ngày.">Công nghệ</button>
+            <button class="preset-btn" data-text="Xin chào! Tôi là trợ lý giọng nói tiếng Việt. Rất vui được gặp bạn.">Chào hỏi</button>
+            <button class="preset-btn" data-text="Sáng nay trời trong xanh, gió nhẹ nhàng. Nhiệt độ khoảng 25 độ C. Một ngày thật dễ chịu!">Thời tiết</button>
+            <button class="preset-btn" data-text="Tác phẩm 'Truyện Kiều' của Nguyễn Du là kiệt tác văn học Việt Nam. Nó đã được dịch ra nhiều thứ tiếng trên thế giới.">Văn học</button>
+            <button class="preset-btn" data-text="Liệu AI có thay thế được con người trong tương lai? Câu hỏi này vẫn còn gây nhiều tranh cãi...">Công nghệ</button>
         </div>
 
         <div class="controls">
             <div class="control-group">
-                <label>Nguồn giọng</label>
+                <label>Engine</label>
                 <select id="engineSelect">
-                    <option value="microsoft">Microsoft Neural</option>
+                    <option value="edge">Edge TTS - Microsoft Neural</option>
                     <option value="google">Google TTS</option>
+                    <option value="piper">Piper TTS (offline)</option>
+                </select>
+                <div class="engine-info" id="engineInfo">Giọng tự nhiên, cần internet</div>
+            </div>
+            <div class="control-group" id="voiceGroup">
+                <label>Giọng đọc (Edge)</label>
+                <select id="voiceSelect">
+                    <option value="female">Hoài My (Nữ)</option>
+                    <option value="male">Nam Minh (Nam)</option>
                 </select>
             </div>
-            <div class="control-group">
+            <div class="control-group" id="piperVoiceGroup" style="display:none">
+                <label>Giọng Piper</label>
+                <select id="piperVoiceSelect"></select>
+            </div>
+            <div class="control-group edge-control">
                 <label>Kiểu đọc</label>
                 <select id="livelySelect">
                     <option value="false">Bình thường</option>
                     <option value="true">Sinh động</option>
                 </select>
             </div>
-            <div class="control-group">
-                <label>Giọng đọc</label>
-                <select id="voiceSelect">
-                    <option value="female">Hoài My (Nữ)</option>
-                    <option value="male">Nam Minh (Nam)</option>
-                </select>
-            </div>
-            <div class="control-group ms-control">
+            <div class="control-group edge-control">
                 <label>Tốc độ</label>
                 <div class="range-wrapper">
                     <input type="range" id="rateSlider" min="-50" max="50" value="0">
                     <span class="range-value" id="rateValue">0%</span>
                 </div>
             </div>
-            <div class="control-group ms-control">
+            <div class="control-group edge-control">
                 <label>Cao độ</label>
                 <div class="range-wrapper">
                     <input type="range" id="pitchSlider" min="-50" max="50" value="0">
                     <span class="range-value" id="pitchValue">0Hz</span>
                 </div>
             </div>
-            <div class="control-group ms-control">
+            <div class="control-group edge-control">
                 <label>Âm lượng</label>
                 <div class="range-wrapper">
                     <input type="range" id="volumeSlider" min="-50" max="50" value="0">
@@ -474,7 +492,10 @@
 
     <script>
         const textInput = document.getElementById('textInput');
+        const engineSelect = document.getElementById('engineSelect');
         const voiceSelect = document.getElementById('voiceSelect');
+        const piperVoiceSelect = document.getElementById('piperVoiceSelect');
+        const livelySelect = document.getElementById('livelySelect');
         const rateSlider = document.getElementById('rateSlider');
         const pitchSlider = document.getElementById('pitchSlider');
         const volumeSlider = document.getElementById('volumeSlider');
@@ -493,14 +514,55 @@
         const historyToggle = document.getElementById('historyToggle');
         const historyList = document.getElementById('historyList');
         const historyBadge = document.getElementById('historyBadge');
+        const engineInfo = document.getElementById('engineInfo');
+        const voiceGroup = document.getElementById('voiceGroup');
+        const piperVoiceGroup = document.getElementById('piperVoiceGroup');
 
         let lastBlobUrl = null;
         let history = JSON.parse(localStorage.getItem('tts_history') || '[]');
 
+        const engineMeta = {
+            edge: { info: 'Giọng tự nhiên, cần internet', showEdge: true },
+            google: { info: 'Google dịch vụ, cần internet', showEdge: false },
+            piper: { info: 'Offline, nhẹ, chạy trên CPU', showEdge: false },
+        };
+
+        function updateUI() {
+            const engine = engineSelect.value;
+            const meta = engineMeta[engine];
+            engineInfo.textContent = meta.info;
+            voiceGroup.style.display = meta.showEdge ? '' : 'none';
+            piperVoiceGroup.style.display = engine === 'piper' ? '' : 'none';
+            document.querySelectorAll('.edge-control').forEach(el => {
+                el.style.display = meta.showEdge ? '' : 'none';
+            });
+        }
+
+        engineSelect.addEventListener('change', updateUI);
+        updateUI();
+
+        // Load Piper voices
+        async function loadPiperVoices() {
+            try {
+                const res = await fetch('/piper-voices');
+                const voices = await res.json();
+                piperVoiceSelect.innerHTML = '';
+                for (const [id, name] of Object.entries(voices)) {
+                    const opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = name;
+                    piperVoiceSelect.appendChild(opt);
+                }
+            } catch (e) {
+                console.warn('Cannot load Piper voices:', e);
+            }
+        }
+        loadPiperVoices();
+
         function renderHistory() {
             historyList.innerHTML = '';
             historyBadge.textContent = history.length;
-            history.forEach((item, i) => {
+            history.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = 'history-item';
                 div.innerHTML = `
@@ -536,17 +598,6 @@
             historyList.classList.toggle('open');
         });
 
-        const engineSelect = document.getElementById('engineSelect');
-        const livelySelect = document.getElementById('livelySelect');
-
-        engineSelect.addEventListener('change', () => {
-            const isMs = engineSelect.value === 'microsoft';
-            document.querySelectorAll('.ms-control').forEach(el => {
-                el.style.opacity = isMs ? '1' : '0.3';
-            });
-            voiceSelect.disabled = !isMs;
-        });
-
         clearHistoryBtn.addEventListener('click', () => {
             if (history.length === 0) return;
             if (confirm('Xóa toàn bộ lịch sử?')) {
@@ -570,9 +621,6 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'a' && e.target === textInput) {
-                return;
-            }
             if (e.ctrlKey && e.key === 'ArrowUp') {
                 e.preventDefault();
                 rateSlider.value = Math.max(-50, parseInt(rateSlider.value) - 5);
@@ -639,18 +687,21 @@
             audioPlayer.style.display = 'none';
 
             try {
+                const body = {
+                    text,
+                    engine: engineSelect.value,
+                    voice: voiceSelect.value,
+                    rate: rateSlider.value,
+                    pitch: pitchSlider.value,
+                    volume: volumeSlider.value,
+                    lively: livelySelect.value === 'true',
+                    piper_voice: piperVoiceSelect.value,
+                };
+
                 const res = await fetch('/speak', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text,
-                        engine: engineSelect.value,
-                        voice: voiceSelect.value,
-                        rate: rateSlider.value,
-                        pitch: pitchSlider.value,
-                        volume: volumeSlider.value,
-                        lively: livelySelect.value === 'true',
-                    })
+                    body: JSON.stringify(body)
                 });
 
                 if (!res.ok) {
